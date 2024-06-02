@@ -22,7 +22,7 @@ xml_data = response.read().decode('utf-8')
 root = ET.fromstring(xml_data)
 
 # Connect to SQLite database (update the database path)
-conn = sqlite3.connect('~/Documents/coding/arxiv/arxiv.db')
+conn = sqlite3.connect('/Users/kylecondron/Documents/coding/science/arxiv.db')
 c = conn.cursor()
 
 # SQL insert statement
@@ -40,8 +40,8 @@ for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
     category = entry.find('{http://arxiv.org/schemas/atom}primary_category').attrib['term']
 
     # Execute the SQL command
-    ##c.execute(insert_sql, (paper_name, summary, date_posted, category, link))
-    print(insert_sql, (paper_name, summary, date_posted, category, link))
+    c.execute(insert_sql, (paper_name, summary, date_posted, category, link))
+    ##print(insert_sql, (paper_name, summary, date_posted, category, link))
 
 
 # Commit changes and close the connection
