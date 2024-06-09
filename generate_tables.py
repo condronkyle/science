@@ -44,7 +44,7 @@ def create_tables(db_path):
 
 
 # Path to your SQLite database
-db_path = 'path_to_your_database.db'
+db_path = '/Users/kylecondron/Documents/coding/science/arxiv.db'
 
 # Call the function to create the tables
 create_tables(db_path)
