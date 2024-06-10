@@ -1,5 +1,8 @@
 import sqlite3
 
+import os
+api_key = os.getenv('CHATGPT_API_KEY')
+
 
 def score_paper():
     # Placeholder functions for scoring. Replace with actual scoring logic.
