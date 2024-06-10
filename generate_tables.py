@@ -14,7 +14,7 @@ def create_tables(db_path):
         summary TEXT,
         date_posted TEXT,
         category TEXT,
-        link TEXT,
+        link TEXT UNIQUE,
         source TEXT
     );
     """
