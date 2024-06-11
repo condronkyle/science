@@ -3,6 +3,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 import http.client
 import time
+from datetime import datetime
 
 def fetch_rss_data(url, retries=3, sleep_time=2):
     attempts = 0
@@ -61,7 +62,7 @@ for item in root.findall('.//item'):
             description = description.split("Abstract:", 1)[1].strip()
         else:
             description = None
-        date_posted = item.find('pubDate').text if item.find('pubDate') is not None else None
+        date_posted = datetime.today().strftime('%Y-%m-%d')
         link = item.find('link').text if item.find('link') is not None else None
         categories = [category.text for category in item.findall('category')]
         category = ', '.join(categories) if categories else None
