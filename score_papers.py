@@ -9,7 +9,7 @@ def score_paper():
     def get_novel_score():
         return 5  # Placeholder value
 
-    def get_exciting_score():
+    def get_impact_score():
         return 6  # Placeholder value
 
     def get_validity_score():
