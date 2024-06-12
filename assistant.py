@@ -34,7 +34,7 @@ class Assistant:
 
 
 class PaperScorer(Assistant):
-    def __init__(self):
+    def __init__(self, input_id=None):
         super().__init__(
             "PaperScorer",
             """
@@ -113,5 +113,5 @@ class PaperScorer(Assistant):
             
             Remember, when you are asked for a trait on a paper, please only provide a single number in response.
             """,
-            None
+            assistant_id=input_id
         )
