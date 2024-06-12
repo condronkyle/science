@@ -4,9 +4,25 @@ client = OpenAI()
 
 
 class Assistant:
-    def __init__(self, name, instructions):
+    def __init__(self, name, instructions, assistant_id):
         self.name = name
-        self.instructions = instructions
+
+        if assistant_id:
+            self.fetch_assistant_details()
+            self.assistant_id = assistant_id
+        else:
+            self.instructions = instructions
+            self.assistant_id = self.create_assistant()
+
+    def fetch_assistant_details(self):
+        # Fetch and set the assistant details based on the existing assistant_id
+        # Note: You might need to use an appropriate method from the client API
+        # to retrieve the details of an assistant. This is a placeholder.
+        assistant_details = client.beta.assistants.retrieve(
+            assistant_id=self.assistant_id
+        )
+        # Assuming the API returns details that can be used to set up the assistant
+        self.instructions = assistant_details.instructions
 
     def create_assistant(self):
         assistant = client.beta.assistants.create(
@@ -17,7 +33,7 @@ class Assistant:
 
 
 class PaperScorer(Assistant):
-    def __init__(self, client):
+    def __init__(self):
         super().__init__(
             "PaperScorer",
             """
@@ -34,13 +50,17 @@ class PaperScorer(Assistant):
             a paper based on:
             
             Novelty - how radical and groundbreaking the research is (versus an established method and hypothesis)
-            Impact - how big an impact might the results of the research be
-            Validity - how scientifically grounded and reliable does the research seem to be (versus some unsubstantiated and dubious claims)
-            Personal Interest - how interesting this topic might be to the user, who will provide you information about their preferences and interests
+            Potential Impact - how big an impact might the results of the research be
+            Plausibility - how scientifically grounded, reliable, and likely to be correct does the research seem to be
+                (versus some unsubstantiated and dubious claims)
+            Personal Interest - how interesting this topic might be to the user, who will provide you information about
+                their preferences and interests. This will vary by user.
             
             For each of these 4 traits that you may be asked about, provide a score from 1 to 10, with 10 being the highest.
             
-            For example, when given:
+            Let me show you two examples below:
+            
+            Example 1:
             
             TIDMAD: Time Series Dataset for Discovering Dark Matter with AI Denoising
             
@@ -51,7 +71,46 @@ class PaperScorer(Assistant):
             Although it has not yet made a discovery, ABRACADABRA has produced several dark matter search results 
             widely endorsed by the physics community. The experiment generates ultra-long time-series data at a rate 
             of 10 million samples per second, where the dark matter signal would manifest itself as a sinusoidal 
-            oscillation mode within the ultra-long time series. In this paper, we present the TIDMAD -- a comprehensive data release from the ABRACADABRA experiment including three key components: an ultra-long time series dataset divided into training, validation, and science subsets; a carefully-designed denoising score for direct model benchmarking; and a complete analysis framework which produces a community-standard dark matter search result suitable for publication as a physics paper. This data release enables core AI algorithms to extract the signal and produce real physics results thereby advancing fundamental science. The data downloading and associated analysis scripts are available at https://github.com/jessicafry/TIDMAD
+            oscillation mode within the ultra-long time series. In this paper, we present the TIDMAD -- a comprehensive
+            data release from the ABRACADABRA experiment including three key components: an ultra-long time series 
+            dataset divided into training, validation, and science subsets; a carefully-designed denoising score for 
+            direct model benchmarking; and a complete analysis framework which produces a community-standard dark 
+            matter search result suitable for publication as a physics paper. This data release enables core AI 
+            algorithms to extract the signal and produce real physics results thereby advancing fundamental science. 
+            The data downloading and associated analysis scripts are available at https://github.com/jessicafry/TIDMAD
             
+            Novelty: 3
+            Potential Impact: 2
+            Plausibility: 9
+            Personal Interest: N/A for now
+            
+            Explanation: This paper is perfectly valid, and supplies data and proposes some new analysis metrics. Using
+            AI may be slightly interesting, but ultimately this is just part of standard science research, and not a
+            very exciting a development.
+            
+            Example 2:
+            
+            The binding of cosmological structures by massless topological defects
+            
+            Assuming spherical symmetry and weak field, it is shown that if one solves the Poisson equation or the 
+            Einstein field equations sourced by a topological defect, \ie~a singularity of a very specific form, 
+            the result is a localised gravitational field capable of driving flat rotation (\ie~Keplerian circular 
+            orbits at a constant speed for all radii) of test masses on a thin spherical shell without any 
+            underlying mass. Moreover, a large-scale structure which exploits this solution by assembling 
+            concentrically a number of such topological defects can establish a flat stellar or galactic rotation 
+            curve, and can also deflect light in the same manner as an equipotential (isothermal) sphere. Thus the 
+            need for dark matter or modified gravity theory is mitigated, at least in part.
+
+            Novelty: 7
+            Potential Impact: 6
+            Plausibility: 4
+            Personal Interest: N/A for now
+            
+            Explanation: This paper introduces a theoretical new idea for explaining dark matter. It's a bit radical,
+            but also is not clear at all if this is likely to be valid. If it is, then this would change our 
+            understanding of cosomology, which is impactful.
+            
+            Remember, when you are asked for a trait on a paper, please only provide a single number in response.
             """,
+            None
         )
