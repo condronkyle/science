@@ -28,6 +28,7 @@ class Assistant:
         assistant = client.beta.assistants.create(
             name=self.name,
             instructions=self.instructions,
+            model="gpt-4o"
         )
         return assistant.id
 
