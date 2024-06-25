@@ -1,35 +1,25 @@
 import sqlite3
-import urllib.request
+import requests
 import xml.etree.ElementTree as ET
-import http.client
-import time
 from datetime import datetime
 
 def fetch_rss_data(url, retries=3, sleep_time=2):
     attempts = 0
     while attempts < retries:
         try:
-            response = urllib.request.urlopen(url)
-            data = response.read()
-            return data.decode('utf-8')
-        except http.client.IncompleteRead as e:
-            attempts += 1
-            print(f"Attempt {attempts} failed: IncompleteRead")
-            if attempts >= retries:
-                # Log partial data to file
-                with open('partial_rss_data.xml', 'w', encoding='utf-8') as file:
-                    file.write(e.partial.decode('utf-8'))
-                return e.partial.decode('utf-8')
-            time.sleep(sleep_time)
-        except Exception as e:
+            response = requests.get(url)
+            response.raise_for_status()  # Will raise an HTTPError for bad responses
+            return response.text
+        except requests.exceptions.RequestException as e:
             attempts += 1
             print(f"Attempt {attempts} failed: {e}")
+            if attempts >= retries:
+                raise Exception("Failed to fetch complete RSS data after several retries.")
             time.sleep(sleep_time)
-    raise Exception("Failed to fetch complete RSS data after several retries.")
 
 def escape_special_characters(xml_data):
     # Replace backslashes with double backslashes
-    xml_data = re.sub(r'\\', r'\\\\', xml_data)
+    xml_data = xml_data.replace("\\", "\\\\")
     return xml_data
 
 # RSS feed URL
@@ -42,6 +32,9 @@ xml_data = fetch_rss_data(rss_url)
 with open('fetched_rss_data.xml', 'w', encoding='utf-8') as file:
     file.write(xml_data)
 
+# Print the length of the fetched XML data for inspection
+print(f"Fetched XML data length: {len(xml_data)}")
+
 # Escape special characters before parsing
 xml_data = escape_special_characters(xml_data)
 
@@ -50,6 +43,10 @@ try:
     root = ET.fromstring(xml_data)
 except ET.ParseError as e:
     print(f"Error parsing XML data: {e}")
+    # Log the problematic part of the XML data
+    lines = xml_data.splitlines()
+    for i, line in enumerate(lines):
+        print(f"Line {i+1}: {line}")
     exit(1)
 
 # Connect to SQLite database (update the database path)

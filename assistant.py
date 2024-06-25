@@ -94,8 +94,8 @@ class PaperScorer(Assistant):
             The binding of cosmological structures by massless topological defects
             
             Assuming spherical symmetry and weak field, it is shown that if one solves the Poisson equation or the 
-            Einstein field equations sourced by a topological defect, \ie~a singularity of a very specific form, 
-            the result is a localised gravitational field capable of driving flat rotation (\ie~Keplerian circular 
+            Einstein field equations sourced by a topological defect, ie~a singularity of a very specific form, 
+            the result is a localised gravitational field capable of driving flat rotation (ie~Keplerian circular 
             orbits at a constant speed for all radii) of test masses on a thin spherical shell without any 
             underlying mass. Moreover, a large-scale structure which exploits this solution by assembling 
             concentrically a number of such topological defects can establish a flat stellar or galactic rotation 

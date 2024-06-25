@@ -1,26 +1,50 @@
 import sqlite3
-
 import os
-api_key = os.getenv('CHATGPT_API_KEY')
+from assistant import PaperScorer
+api_key = os.getenv('OPENAI_API_KEY')
 
+paper_scorer = PaperScorer(input_id='asst_vnANVGlFmmC1fRrl2I8JlxuI')
 
-def score_paper():
-    # Placeholder functions for scoring. Replace with actual scoring logic.
-    def get_novel_score():
-        return 5  # Placeholder value
+def create_thread():
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": paper_scorer.instructions}
+        ]
+    )
+    thread_id = response['id']
+    return thread_id
+
+def add_message_to_thread(thread_id, content):
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        thread_id=thread_id,
+        messages=[
+            {"role": "user", "content": content}
+        ]
+    )
+    return response['choices'][0]['message']['content']
+
+def score_paper(thread_id):
+    def get_novelty_score():
+        message = "Please provide a novelty score for this paper."
+        return add_message_to_thread(thread_id, message)
 
     def get_impact_score():
-        return 6  # Placeholder value
+        message = "Please provide an impact score for this paper."
+        return add_message_to_thread(thread_id, message)
 
     def get_validity_score():
-        return 7  # Placeholder value
+        message = "Please provide a validity score for this paper."
+        return add_message_to_thread(thread_id, message)
 
     def get_personal_score():
-        return 8  # Placeholder value
+        message = "Please provide a personal score for this paper."
+        return add_message_to_thread(thread_id, message)
 
     return {
-        'novel_score': get_novel_score(),
-        'exciting_score': get_exciting_score(),
+        'novelty_score': get_novelty_score(),
+        'impact_score': get_impact_score(),
         'validity_score': get_validity_score(),
         'personal_score': get_personal_score()
     }
@@ -40,21 +64,26 @@ def score_new_papers(db_path):
     cursor.execute(query)
     unscored_papers = cursor.fetchall()
 
+
+    count = 1
     # Process each unscored paper
     for paper in unscored_papers:
+        if count >5:
+            exit
         paper_id = paper[0]
         category = paper[1]
-        scores = score_paper()
+        thread_id = create_thread()
+        scores = score_paper(thread_id)
 
         # SQL to insert scored paper
         insert_sql = """
-        INSERT INTO scored_papers (paper_id, novel_score, exciting_score, validity_score, personal_score, category)
+        INSERT INTO scored_papers (paper_id, novelty_score, impact_score, validity_score, personal_score, category)
         VALUES (?, ?, ?, ?, ?, ?);
         """
         cursor.execute(insert_sql, (
             paper_id,
-            scores['novel_score'],
-            scores['exciting_score'],
+            scores['novelty_score'],
+            scores['impact_score'],
             scores['validity_score'],
             scores['personal_score'],
             category
