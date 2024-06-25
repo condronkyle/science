@@ -14,18 +14,26 @@ def fetch_rss_data(url, retries=3, sleep_time=2):
             return data.decode('utf-8')
         except http.client.IncompleteRead as e:
             attempts += 1
+            print(f"Attempt {attempts} failed: IncompleteRead")
             if attempts >= retries:
                 # Log partial data to file
                 with open('partial_rss_data.xml', 'w', encoding='utf-8') as file:
                     file.write(e.partial.decode('utf-8'))
                 return e.partial.decode('utf-8')
             time.sleep(sleep_time)
+        except Exception as e:
+            attempts += 1
+            print(f"Attempt {attempts} failed: {e}")
+            time.sleep(sleep_time)
     raise Exception("Failed to fetch complete RSS data after several retries.")
 
-# RSS feed URL
-#rss_url = "http://rss.arxiv.org/rss/cs+q-bio+astro-ph+cond-mat+econ+eess+gr-qc+hep-lat+hep-ph+hep-th+math+nlin+nucl-ex+nucl-th+physics+q-bio+q-fin+quant-ph+stat"
-rss_url = "http://rss.arxiv.org/rss/astro-ph"
+def escape_special_characters(xml_data):
+    # Replace backslashes with double backslashes
+    xml_data = re.sub(r'\\', r'\\\\', xml_data)
+    return xml_data
 
+# RSS feed URL
+rss_url = "http://rss.arxiv.org/rss/astro-ph"
 
 # Attempt to fetch and parse the data
 xml_data = fetch_rss_data(rss_url)
@@ -33,6 +41,9 @@ xml_data = fetch_rss_data(rss_url)
 # Log fetched data to file for inspection
 with open('fetched_rss_data.xml', 'w', encoding='utf-8') as file:
     file.write(xml_data)
+
+# Escape special characters before parsing
+xml_data = escape_special_characters(xml_data)
 
 # Parse the XML data
 try:
