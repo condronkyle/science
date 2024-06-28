@@ -39,7 +39,6 @@ def add_message_to_thread(thread_id, message):
         else:
             print(run.status)
             time.sleep(5)
-
     return response
 
 def get_novelty_score(thread_id):
@@ -97,7 +96,7 @@ def score_new_papers(db_path):
     count = 1
     # Process each unscored paper
     for paper in unscored_papers:
-        if count > 10:
+        if count > 1:
             exit()
         count=count+1
         paper_id = paper[0]
@@ -114,7 +113,6 @@ def score_new_papers(db_path):
         INSERT INTO scored_papers (paper_id, novelty_score, impact_score, validity_score, personal_score, category)
         VALUES (?, ?, ?, ?, ?, ?);
         """
-        cursor = conn.cursor()
         cursor.execute(insert_sql, (
             paper_id,
             scores['novelty_score'],
@@ -123,11 +121,11 @@ def score_new_papers(db_path):
             scores['personal_score'],
             category
         ))
+        conn.commit()
         print("sql executed")
 
     print(f"Processed and scored {len(unscored_papers)} papers.")
     # Commit changes and close the connection
-    conn.commit()
     conn.close()
 
 # Path to your SQLite database
