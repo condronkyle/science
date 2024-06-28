@@ -1,6 +1,9 @@
 from openai import OpenAI
+import os
 
-client = OpenAI()
+client = OpenAI(
+    api_key = os.environ.get("OPENAI_API_KEY"),
+)
 
 
 class Assistant:
@@ -8,8 +11,8 @@ class Assistant:
         self.name = name
 
         if assistant_id:
-            self.fetch_assistant_details()
             self.assistant_id = assistant_id
+            self.fetch_assistant_details()
         else:
             self.instructions = instructions
             self.assistant_id = self.create_assistant()
@@ -34,7 +37,7 @@ class Assistant:
 
 
 class PaperScorer(Assistant):
-    def __init__(self, input_id=None):
+    def __init__(self, input_id="asst_vnANVGlFmmC1fRrl2I8JlxuI"):
         super().__init__(
             "PaperScorer",
             """

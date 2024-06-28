@@ -1,52 +1,81 @@
 import sqlite3
 import os
+import time
+from openai import OpenAI, AssistantEventHandler
 from assistant import PaperScorer
-api_key = os.getenv('OPENAI_API_KEY')
+from typing_extensions import override
+import json
+
+api_key=os.environ.get("OPENAI_API_KEY")
 
 paper_scorer = PaperScorer(input_id='asst_vnANVGlFmmC1fRrl2I8JlxuI')
 
-def create_thread():
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": paper_scorer.instructions}
-        ]
-    )
-    thread_id = response['id']
-    return thread_id
+client = OpenAI(
+    # This is the default and can be omitted
+    api_key=api_key,
+    organization="org-vMINNc5glFMQLODP4dQhGQZl"
+)
 
-def add_message_to_thread(thread_id, content):
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
+
+def add_message_to_thread(thread_id, message):
+
+    new_message = client.beta.threads.messages.create(
         thread_id=thread_id,
-        messages=[
-            {"role": "user", "content": content}
-        ]
+        role="user",
+        content=message
     )
-    return response['choices'][0]['message']['content']
 
-def score_paper(thread_id):
-    def get_novelty_score():
-        message = "Please provide a novelty score for this paper."
-        return add_message_to_thread(thread_id, message)
+    run = client.beta.threads.runs.create_and_poll(
+        thread_id=thread_id,
+        assistant_id=paper_scorer.assistant_id,
+    )
+    while True:
+        if run.status == 'completed': 
+            messages = client.beta.threads.messages.list(
+                thread_id=thread_id
+            )
+            response = messages.data[0].content[0].text.value
+            break
+        else:
+            print(run.status)
+            time.sleep(5)
 
-    def get_impact_score():
-        message = "Please provide an impact score for this paper."
-        return add_message_to_thread(thread_id, message)
+    return response
 
-    def get_validity_score():
-        message = "Please provide a validity score for this paper."
-        return add_message_to_thread(thread_id, message)
+def get_novelty_score(thread_id):
+    message = "Please provide a novelty score for this paper."
+    return add_message_to_thread(thread_id, message)
 
-    def get_personal_score():
-        message = "Please provide a personal score for this paper."
-        return add_message_to_thread(thread_id, message)
+def get_impact_score(thread_id):
+    message = "Please provide an impact score for this paper."
+    return add_message_to_thread(thread_id, message)
+
+def get_validity_score(thread_id):
+    message = "Please provide a validity score for this paper."
+    return add_message_to_thread(thread_id, message)
+
+def get_personal_score(thread_id):
+    return 5
+    # message = "Please provide a personal score for this paper."
+    # return add_message_to_thread(thread_id, message)
+
+def score_paper(title, abstract):
+    thread = client.beta.threads.create()
+    thread_id = thread.id
+
+    message = client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=f"""Paper Title: {title}
+        Paper Abstract: {abstract}
+        """
+    )
 
     return {
-        'novelty_score': get_novelty_score(),
-        'impact_score': get_impact_score(),
-        'validity_score': get_validity_score(),
-        'personal_score': get_personal_score()
+        'novelty_score': get_novelty_score(thread_id),
+        'impact_score': get_impact_score(thread_id),
+        'validity_score': get_validity_score(thread_id),
+        'personal_score': get_personal_score(thread_id)
     }
 
 
@@ -56,7 +85,7 @@ def score_new_papers(db_path):
 
     # SQL to find papers not scored yet
     query = """
-    SELECT paper_id, category FROM papers
+    SELECT paper_id, category, paper_name, summary FROM papers
     WHERE paper_id NOT IN (SELECT paper_id FROM scored_papers);
     """
 
@@ -68,18 +97,24 @@ def score_new_papers(db_path):
     count = 1
     # Process each unscored paper
     for paper in unscored_papers:
-        if count >5:
-            exit
+        if count > 10:
+            exit()
+        count=count+1
         paper_id = paper[0]
         category = paper[1]
-        thread_id = create_thread()
-        scores = score_paper(thread_id)
+        title = paper[2]
+        abstract = paper[3]
+        print(title)
+        scores = score_paper(title, abstract)
+
+        print(str(paper_id) + "\n" + category + "\n" + title + "\n" + str(scores))
 
         # SQL to insert scored paper
         insert_sql = """
         INSERT INTO scored_papers (paper_id, novelty_score, impact_score, validity_score, personal_score, category)
         VALUES (?, ?, ?, ?, ?, ?);
         """
+        cursor = conn.cursor()
         cursor.execute(insert_sql, (
             paper_id,
             scores['novelty_score'],
@@ -88,11 +123,12 @@ def score_new_papers(db_path):
             scores['personal_score'],
             category
         ))
+        print("sql executed")
 
+    print(f"Processed and scored {len(unscored_papers)} papers.")
     # Commit changes and close the connection
     conn.commit()
     conn.close()
-    print(f"Processed and scored {len(unscored_papers)} papers.")
 
 # Path to your SQLite database
 db_path = '/Users/kylecondron/Documents/coding/science/arxiv.db'
