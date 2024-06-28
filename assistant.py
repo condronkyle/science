@@ -68,7 +68,7 @@ class PaperScorer(Assistant):
             
             TIDMAD: Time Series Dataset for Discovering Dark Matter with AI Denoising
             
-            Dark matter makes up approximately 85% of total matter in our universe, yet it has never been directly 
+            Dark matter makes up approximately 85 percent of total matter in our universe, yet it has never been directly 
             observed in any laboratory on Earth. The origin of dark matter is one of the most important questions in 
             contemporary physics, and a convincing detection of dark matter would be a Nobel-Prize-level breakthrough 
             in fundamental science. The ABRACADABRA experiment was specifically designed to search for dark matter. 
@@ -85,7 +85,7 @@ class PaperScorer(Assistant):
             
             Novelty: 3
             Potential Impact: 2
-            Plausibility: 9
+            Validity: 7
             Personal Interest: N/A for now
             
             Explanation: This paper is perfectly valid, and supplies data and proposes some new analysis metrics. Using
@@ -105,16 +105,20 @@ class PaperScorer(Assistant):
             curve, and can also deflect light in the same manner as an equipotential (isothermal) sphere. Thus the 
             need for dark matter or modified gravity theory is mitigated, at least in part.
 
-            Novelty: 7
+            Novelty: 6
             Potential Impact: 6
-            Plausibility: 4
+            Validity: 4
             Personal Interest: N/A for now
             
             Explanation: This paper introduces a theoretical new idea for explaining dark matter. It's a bit radical,
             but also is not clear at all if this is likely to be valid. If it is, then this would change our 
             understanding of cosomology, which is impactful.
+
+            ---
+
+            Consider most papers to be around 5, and require truly impressive results in one of these categories before awarding higher than a 7.
             
-            Remember, when you are asked for a trait on a paper, please only provide a single number in response.
+            Remember, when you are asked for a trait on a paper, please only provide a single number in response!
             """,
             assistant_id=input_id
         )

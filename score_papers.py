@@ -96,7 +96,7 @@ def score_new_papers(db_path):
     count = 1
     # Process each unscored paper
     for paper in unscored_papers:
-        if count > 1:
+        if count > 20:
             exit()
         count=count+1
         paper_id = paper[0]
