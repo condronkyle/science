@@ -1,25 +1,22 @@
 import sqlite3
+import requests
+from lxml import etree
 import urllib.parse
-import urllib.request
-import xml.etree.ElementTree as ET
 
-# API call setup
-base_url = "http://export.arxiv.org/api/query"
-params = {
-    "search_query": 'ti:"dark matter"',
-    "sortBy": "lastUpdatedDate",
-    "sortOrder": "descending",
-    "max_results": 1
-}
-encoded_params = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
-url = f"{base_url}?{encoded_params}"
+url = "https://rss.arxiv.org/rss/astro-ph"
 
-# Fetch data from the API
-response = urllib.request.urlopen(url)
-xml_data = response.read().decode('utf-8')
+# Fetch data from the API with streaming
+response = requests.get(url, stream=True)
+response.raise_for_status()  # Check for request errors
 
-# Parse the XML data
-root = ET.fromstring(xml_data)
+
+# Check the response content
+print("Status Code:", response.status_code)
+print("Content-Type:", response.headers.get('Content-Type'))
+
+# After fetching the response
+response.raise_for_status()  # Check for request errors
+response.raw.decode_content = True  # Ensure content is decoded
 
 # Connect to SQLite database (update the database path)
 conn = sqlite3.connect('/Users/kylecondron/Documents/coding/science/arxiv.db')
@@ -31,18 +28,35 @@ INSERT INTO papers (paper_name, summary, date_posted, category, link)
 VALUES (?, ?, ?, ?, ?);
 '''
 
-# Process and insert data into the database
-for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
-    paper_name = entry.find('{http://www.w3.org/2005/Atom}title').text
-    summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
-    date_posted = entry.find('{http://www.w3.org/2005/Atom}published').text
-    link = entry.find('{http://www.w3.org/2005/Atom}link[@rel="alternate"]').attrib['href']
-    category = entry.find('{http://arxiv.org/schemas/atom}primary_category').attrib['term']
+# Define namespaces
+ns = {
+    'atom': 'http://www.w3.org/2005/Atom',
+    'arxiv': 'http://arxiv.org/schemas/atom'
+}
+
+# Use iterparse for efficient parsing
+context = etree.iterparse(response.raw, events=('end',), tag='{http://www.w3.org/2005/Atom}entry')
+
+for event, elem in context:
+    # Extract data from each <entry> element
+    paper_name = elem.find('atom:title', namespaces=ns).text.strip()
+    summary = elem.find('atom:summary', namespaces=ns).text.strip()
+    date_posted = elem.find('atom:published', namespaces=ns).text.strip()
+    link_elem = elem.find('atom:link[@rel="alternate"]', namespaces=ns)
+    link = link_elem.get('href') if link_elem is not None else None
+    primary_category_elem = elem.find('arxiv:primary_category', namespaces=ns)
+    category = primary_category_elem.get('term') if primary_category_elem is not None else None
 
     # Execute the SQL command
     c.execute(insert_sql, (paper_name, summary, date_posted, category, link))
-    ##print(insert_sql, (paper_name, summary, date_posted, category, link))
 
+    # Clear the element from memory to free up resources
+    elem.clear()
+    while elem.getprevious() is not None:
+        del elem.getparent()[0]
+
+# Clean up the parser
+del context
 
 # Commit changes and close the connection
 conn.commit()
