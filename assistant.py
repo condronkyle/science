@@ -37,7 +37,7 @@ class Assistant:
 
 
 class PaperScorer(Assistant):
-    def __init__(self, input_id="asst_vnANVGlFmmC1fRrl2I8JlxuI"):
+    def __init__(self, input_id="asst_J8DdlZtrejFTHrJqsnm6aDM9"):
         super().__init__(
             "PaperScorer",
             """
