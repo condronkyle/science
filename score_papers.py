@@ -8,7 +8,7 @@ import json
 
 api_key=os.environ.get("OPENAI_API_KEY")
 
-paper_scorer = PaperScorer("asst_J8DdlZtrejFTHrJqsnm6aDM9")
+paper_scorer = PaperScorer("asst_i4LBbl5pzLCQsTB3WsUiczmX")
 
 client = OpenAI(
     # This is the default and can be omitted

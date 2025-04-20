@@ -10,7 +10,7 @@ def lambda_handler(event, context):
 
     # 1) Instantiate the OpenAI client
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    assistant_id = "asst_O0SoiP3rRHetL8SSTUJE7B3s"
+    assistant_id = "asst_i4LBbl5pzLCQsTB3WsUiczmX"
 
     """
     AWS Lambda function that:

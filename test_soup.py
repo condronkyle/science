@@ -12,7 +12,7 @@ os.environ["condronkbucket"] = "your_s3_bucket_name_here"
 def process_rss_feed():
     # Initialize OpenAI client
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    assistant_id = "asst_O0SoiP3rRHetL8SSTUJE7B3s"
+    assistant_id = "asst_i4LBbl5pzLCQsTB3WsUiczmX"
 
     # Define the RSS feed URL
     feed_url = "https://rss.arxiv.org/rss/math"
